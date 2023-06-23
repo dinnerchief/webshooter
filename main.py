@@ -21,12 +21,10 @@ async def send_welcome(message: types.Message):
 @dp.message_handler()
 async def echo(message: types.Message):
     mess = message.text
-    print(mess)
-
     pattern = r'(https?:\/\/(?:www\.)?[^\/\s]+)'
-    matches = re.findall(pattern, mess)[0]
+    matches = re.findall(pattern, mess)
 
-    if matches is None:
+    if matches == []:
         await message.answer('Пожалуйста, отправьте ссылку на веб-сайт. Например https://youtube.com/')
         return
 
@@ -36,16 +34,15 @@ async def echo(message: types.Message):
     options.add_argument("--lang=ru")
     options.add_argument("start-maximized")
     driver = webdriver.Chrome(options=options)
-    driver.fullscreen_window()
-    driver.get(message.text)
+    driver.get(matches[0])
     file = driver.get_screenshot_as_base64()
 
     image_data = base64.b64decode(file)
 
     photo_stream = io.BytesIO(image_data)
-    photo_stream.name = 'image.jpg'
+    photo_stream.name = f'{matches[0]}.jpg'
     photo = types.InputFile(photo_stream)
-    await message.answer_document(photo)
+    await message.answer_photo(photo)
 
 
 if __name__ == '__main__':
